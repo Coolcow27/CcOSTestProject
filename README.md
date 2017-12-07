@@ -56,5 +56,5 @@ Here an example:
 
 ## Licence
 
-Author of CcOSExampleProject-Framework: (Andreas Dirmeier)[http://adirmeier.de]
+Author of CcOSExampleProject-Framework: [Andreas Dirmeier](http://adirmeier.de)
 This application is licenced under LGPL v3. Look at COPYING and COPYING.LESSER for further information.
