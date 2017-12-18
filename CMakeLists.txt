@@ -23,7 +23,7 @@ project("CcOSExampleProject" VERSION "${CCOSEXAMPLEPROJECT_VERSION_CMAKE}")
 # Setup Debug
 ################################################################################
 if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
-  message("Build-Type set to ${CMAKE_BUILD_TYPE}")
+  message("- Build-Type set to ${CMAKE_BUILD_TYPE}")
   set(CCOSEXAMPLEPROJECT_BUILD_TYPE "DEBUG" )
   set(CMAKE_VERBOSE_MAKEFILE          ON)
 else()

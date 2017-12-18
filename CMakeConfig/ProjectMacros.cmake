@@ -1,14 +1,14 @@
-SET(CCOSEXAMPLEPROJECT_CMAKECONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig)
+set(CCOSEXAMPLEPROJECT_CMAKECONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig)
 
 ################################################################################
 # Setup default installation targets for a project
 ################################################################################
-MACRO (CcOSExampleProjectSetInstall ProjectName )
+macro (CcOSExampleProjectSetInstall ProjectName )
   set_property( TARGET ${ProjectName} APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_CURRENT_BINARY_DIR}>
               )
 
-  INSTALL( TARGETS  ${ProjectName}
+  install( TARGETS  ${ProjectName}
            EXPORT  "${ProjectName}Config"
            RUNTIME DESTINATION bin
            LIBRARY DESTINATION lib
@@ -23,36 +23,36 @@ MACRO (CcOSExampleProjectSetInstall ProjectName )
                 )
     install(EXPORT "${ProjectName}Config" DESTINATION "lib/${ProjectName}")
     
-    INSTALL( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include
+    install( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include
              FILES_MATCHING PATTERN "*.h"
              PATTERN "*/src"  EXCLUDE
              PATTERN "*/test" EXCLUDE)
   endif()
-ENDMACRO()
+endmacro()
 
 ################################################################################
 # Add Xml Configurations to cmake install
 ################################################################################
-MACRO (CcOSExampleProjectSetInstallConfig ProjectName )
-  INSTALL( DIRECTORY    ${CMAKE_CURRENT_SOURCE_DIR}/config/
+macro (CcOSExampleProjectSetInstallConfig ProjectName )
+  install( DIRECTORY    ${CMAKE_CURRENT_SOURCE_DIR}/config/
            DESTINATION  config/${ProjectName}
            PATTERN "*.xml" )
-ENDMACRO()
+endmacro()
 
 ################################################################################
 # Set Cmake Version Info to Project
 ################################################################################
-MACRO (CcSetOSVersion ProjectName )
-  SET_TARGET_PROPERTIES(  ${ProjectName}
+macro (CcSetOSVersion ProjectName )
+  set_target_properties(  ${ProjectName}
                           PROPERTIES
                           VERSION ${CCOSEXAMPLEPROJECT_VERSION_CMAKE}
                           SOVERSION ${CCOSEXAMPLEPROJECT_VERSION_CMAKE})
-ENDMACRO()
+endmacro()
 
 ################################################################################
 # Setup Include Directorys for importing CcOSExampleProject
 ################################################################################
-MACRO( CcOSExampleProjectTargetIncludeDirs ProjectName )
+macro( CcOSExampleProjectTargetIncludeDirs ProjectName )
   foreach(DIR ${ARGN})
     LIST(APPEND DIRS ${DIR} )
     target_include_directories(${ProjectName} PUBLIC $<BUILD_INTERFACE:${DIR}> )
@@ -60,23 +60,62 @@ MACRO( CcOSExampleProjectTargetIncludeDirs ProjectName )
   target_include_directories( ${ProjectName} PUBLIC
                                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                                 $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/${ProjectName}> )
-ENDMACRO()
+endmacro()
 
 ################################################################################
 # Generate RC-File for MSVC Builds, output is a Version.h File in current dir
 ################################################################################
-MACRO( CcOSExampleProjectGenerateRcFileToCurrentDir ProjectName )
-  SET(PROJECT_NAME "${ProjectName}")
+macro( CcOSExampleProjectGenerateRcFileToCurrentDir ProjectName )
+  set(PROJECT_NAME "${ProjectName}")
   configure_file( ${CCOSEXAMPLEPROJECT_CMAKECONFIG_DIR}/InputFiles/ProjectVersion.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/CcOSExampleProjectVersion.rc.tmp @ONLY)
   CcCopyFile(${CMAKE_CURRENT_SOURCE_DIR}/CcOSExampleProjectVersion.rc.tmp ${CMAKE_CURRENT_SOURCE_DIR}/CcOSExampleProjectVersion.rc)
-ENDMACRO()
+endmacro()
 
 ################################################################################
 # Rename Endings of Project output file to CcOSExampleProject default.
 # CURRENTLY NOT IN USE!!
 ################################################################################
-MACRO( CcOSExampleProjectProjectNaming ProjectName )
+macro( CcOSExampleProjectProjectNaming ProjectName )
   set_target_properties(${ProjectName} PROPERTIES OUTPUT_NAME "${ProjectName}" )
   # Debug becomes and d at the end.
   set_target_properties(${ProjectName} PROPERTIES OUTPUT_NAME_DEBUG "${ProjectName}d" )
-ENDMACRO()
+endmacro()
+
+################################################################################
+# Set Version info for library.
+# If Linux, set SOVERSION too.
+################################################################################
+macro( CcOSExampleProjectProjectLibVersion ProjectName )
+  set_target_properties(${ProjectName} PROPERTIES 
+                                        VERSION ${CCOSEXAMPLEPROJECT_VERSION_CMAKE})
+  if(LINUX)
+    set_target_properties(${ProjectName} PROPERTIES 
+                                          SOVERSION ${CCOSEXAMPLEPROJECT_VERSION_CMAKE} )
+  endif(LINUX)
+endmacro()
+
+################################################################################
+# Post config Steps afert add_library:
+# Usage CcOSExampleProjectLibSettings( ProjectName [bSetupInstall] [bSetupVersion] [sSetFiltersByFolders])
+################################################################################
+macro( CcOSExampleProjectLibSettings ProjectName )
+  if(${ARGC} GREATER 1)
+    if(${ARGV1} STREQUAL "TRUE")
+      CcOSExampleProjectSetInstall(${ProjectName})
+    endif(${ARGV1} STREQUAL "TRUE")
+  endif(${ARGC} GREATER 1)
+  
+  if(${ARGC} GREATER 2)
+    if(${ARGV2} STREQUAL "TRUE")
+      CcOSExampleProjectProjectLibVersion(${ProjectName})
+    endif(${ARGV2} STREQUAL "TRUE")
+  endif(${ARGC} GREATER 2)
+  
+  if(${ARGC} GREATER 3)
+    set(FILES ${ARGN})
+    list(REMOVE_AT FILES 0)
+    list(REMOVE_AT FILES 0)
+    list(REMOVE_AT FILES 0)
+    CcSetFiltersByFolders(${FILES})
+  endif(${ARGC} GREATER 3)
+endmacro()
