@@ -85,7 +85,7 @@ endmacro()
 # Set Version info for library.
 # If Linux, set SOVERSION too.
 ################################################################################
-macro( CcOSExampleProjectProjectLibVersion ProjectName )
+macro( CcOSExampleProjectLibVersion ProjectName )
   set_target_properties(${ProjectName} PROPERTIES 
                                         VERSION ${CCOSEXAMPLEPROJECT_VERSION_CMAKE})
   if(LINUX)
