@@ -1,26 +1,123 @@
-#cd ..
-#mkdir Solution.VC12
-#cd Solution.VC12
-#cmake ../ -G "Visual Studio 12" -DCMAKE_GENERATOR_PLATFORM=x64
-#cmake.exe --build . --config Release
-#ctest -C Release
-#cd ..
-#cd Tools
 PARAM(
-    [bool]$StopOnError = $false
+    [bool]$StopOnError = $true
 )
 
-$CurrentDir  = (Get-Item .\).FullName
-$TestLog     = $CurrentDir+"\Test.log" 
-$SolutionDir = $PSScriptRoot+"\Solution"
-$OutputDir   = $PSScriptRoot+"\Output"
-$CcOSRootDir = $PSScriptRoot+"\.."
+function StartBuildProcess
+{
+    PARAM(
+        $VisualStudio,
+        $Architecture,
+        $Configuration,
+        $Static
+    )
+    
+    $CurrentDir  = (Get-Item .\).FullName
+    $TestLog     = $CurrentDir+"\Test.log" 
+    $SolutionDir = $PSScriptRoot+"\Solution"
+    $OutputDir   = $PSScriptRoot+"\Output"
+    $CcOSRootDir = $PSScriptRoot+"\.."
 
-$VisualStudios = @("Visual Studio 12", "Visual Studio 14", "Visual Studio 15") #
+    # Fist Clean Solution if Existing
+    if((Test-Path $SolutionDir))
+    {
+        Remove-Item $SolutionDir -Recurse -Force
+    }
+    # Fist Clean Solution if Existing
+    if((Test-Path $OutputDir))
+    {
+        Remove-Item $OutputDir -Recurse -Force
+    }
+    New-Item $SolutionDir -ItemType Directory
+    New-Item $OutputDir -ItemType Directory
+    cd $SolutionDir
+
+    $VisualStudioString = $VisualStudio
+    if($Architecture -eq "x64")
+    {
+        $VisualStudioString += " Win64"
+    }
+    try
+    {
+        $AppendCmake = ""
+        $AppendCmake2 = ""
+        if($Static -eq "Static")
+        {
+            $AppendCmake = "-DCCOS_LINK_TYPE=STATIC"
+        }
+        if($Configuration -eq "Release")
+        {
+            $AppendCmake2 = "-DCC_WARNING_AS_ERROR=TRUE"
+        }
+        & "cmake.exe" "$CcOSRootDir" "-G" $VisualStudioString "-DCC_OUTPUT_DIR=`"$OutputDir`"" "$AppendCmake" "$AppendCmake2"
+        if($LASTEXITCODE -ne 0)
+        {
+            cd $CurrentDir
+            $Msg = "Failed: cmake generation with $VisualStudioString $Configuration $AppendCmake"
+            Add-Content $TestLog $Msg
+            throw $Msg
+        }
+        cmake.exe --build . --config $Configuration
+        if($LASTEXITCODE -ne 0)
+        {
+            cd $CurrentDir
+            $Msg = "Failed: cmake build with $VisualStudioString $Configuration $AppendCmake"
+            Add-Content $TestLog $Msg
+            throw $Msg
+        }
+        ctest --output-on-failure -C $Configuration
+        if($LASTEXITCODE -ne 0)
+        {
+            cd $CurrentDir
+            $Msg = "Failed: ctest with $VisualStudioString $Configuration $AppendCmake"
+            Add-Content $TestLog $Msg
+            throw $Msg
+        }
+        Add-Content $TestLog "Success: $VisualStudioString $Configuration $AppendCmake"
+    }
+    catch
+    {
+        cd $CurrentDir
+        if($StopOnError)
+        { 
+            throw $Msg 
+        }
+
+    }
+    finally
+    {
+        cd $CurrentDir
+        if((Test-Path $SolutionDir))
+        {
+            Remove-Item $SolutionDir -Recurse -Force
+        }
+        # Fist Clean Solution if Existing
+        if((Test-Path $OutputDir))
+        {
+            Remove-Item $OutputDir -Recurse -Force
+        }
+    }
+}
+
+# Test all available VS Versions
+$VisualStudios = @()
+if(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat")
+{
+    $VisualStudios += "Visual Studio 12";
+}
+if(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat")
+{
+    $VisualStudios += "Visual Studio 14";
+}
+if(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe")
+{
+    $VisualStudios += "Visual Studio 15";
+}
+
 $Architectures  = @("win32", "x64")
-$Configurations = @("Debug", "Release") # Not required but possible to test : "RelWithDebInfo", "MinSizeRel")
-
-
+$Configurations = @("Release", "Debug") # Not required but possible to test : "RelWithDebInfo", "MinSizeRel")
+$Statics = @("Static", "Shared")
+    
+$CurrentDir  = (Get-Item .\).FullName
 $TestLog     = $CurrentDir+"\Test.log" 
 if((Test-Path $TestLog))
 {
@@ -33,62 +130,12 @@ foreach($VisualStudio in $VisualStudios)
     {
         foreach($Configuration in $Configurations)
         {
-            # Fist Clean Solution if Existing
-            if((Test-Path $SolutionDir))
+            foreach($Static in $Statics)
             {
-                Remove-Item $SolutionDir -Recurse -Force
-            }
-            # Fist Clean Solution if Existing
-            if((Test-Path $OutputDir))
-            {
-                Remove-Item $OutputDir -Recurse -Force
-            }
-            New-Item $SolutionDir -ItemType Directory
-            New-Item $OutputDir -ItemType Directory
-            cd $SolutionDir
-
-            $VisualStudioString = $VisualStudio
-            if($Architecture -eq "x64")
-            {
-                $VisualStudioString += " Win64"
-            }
-            try
-            {
-                & "cmake.exe" "$CcOSRootDir" "-G" $VisualStudioString "-DCCOS_OUTPUT_DIR=`"$OutputDir`""
-                if($LASTEXITCODE -ne 0)
-                {
-                    cd $CurrentDir
-                    $Msg = "Failed: cmake generation with $VisualStudioString $Configuration"
-                    Add-Content $TestLog $Msg
-                    throw $Msg
-                }
-                cmake.exe --build . --config $Configuration
-                if($LASTEXITCODE -ne 0)
-                {
-                    cd $CurrentDir
-                    $Msg = "Failed: cmake build with $VisualStudioString $Configuration"
-                    Add-Content $TestLog $Msg
-                    throw $Msg
-                }
-                ctest -C $Configuration
-                if($LASTEXITCODE -ne 0)
-                {
-                    cd $CurrentDir
-                    $Msg = "Failed: ctest with $VisualStudioString $Configuration"
-                    Add-Content $TestLog $Msg
-                    throw $Msg
-                }
-                Add-Content $TestLog "Success: $VisualStudioString $Configuration"
-            }
-            catch
-            {
-                Write-Host $_.Exception.Message
-            }
-            finally
-            {
-                if($StopOnError){ throw $Msg }
-                cd $CurrentDir
+                StartBuildProcess $VisualStudio $Architecture $Configuration $Static
             }
         }
     }
 }
+# ExampleCall StartBuildProcess "Visual Studio 12" "win32" "Release" "Shared"
+# ExampleCall StartBuildProcess "Visual Studio 12" "x64" "Debug" "Static"

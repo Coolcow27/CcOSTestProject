@@ -54,9 +54,9 @@ endmacro()
 ################################################################################
 macro( CcOSExampleProjectTargetIncludeDirs ProjectName )
   foreach(DIR ${ARGN})
-    LIST(APPEND DIRS ${DIR} )
+    list(APPEND DIRS ${DIR} )
     target_include_directories(${ProjectName} PUBLIC $<BUILD_INTERFACE:${DIR}> )
-  ENDFOREACH()
+  endforeach()
   target_include_directories( ${ProjectName} PUBLIC
                                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                                 $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/${ProjectName}> )
@@ -107,7 +107,7 @@ macro( CcOSExampleProjectLibSettings ProjectName )
   
   if(${ARGC} GREATER 2)
     if(${ARGV2} STREQUAL "TRUE")
-      CcOSExampleProjectProjectLibVersion(${ProjectName})
+      CcOSExampleProjectLibVersion(${ProjectName})
     endif(${ARGV2} STREQUAL "TRUE")
   endif(${ARGC} GREATER 2)
   

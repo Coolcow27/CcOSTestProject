@@ -1,11 +1,3 @@
-#cd ..
-#mkdir Solution.VC12
-#cd Solution.VC12
-#cmake ../ -G "Visual Studio 12" -DCMAKE_GENERATOR_PLATFORM=x64
-#cmake.exe --build . --config Release
-#ctest -C Release
-#cd ..
-#cd Tools
 PARAM(
     [bool]$StopOnError = $false
 )
@@ -15,8 +7,8 @@ $TestLog     = $CurrentDir+"\Test.log"
 $SolutionDir = $CurrentDir+"\Solution" 
 $OutputDir   = $CurrentDir+"\Output"
 
-$VisualStudios  = @("2015", "2017", "2013")
-$Architectures  = @("x64", "x86")
+$VisualStudios  = @("2017", "2015", "2013")
+$Architectures  = @("x86", "x64")
 $Configurations = @("Release", "Debug",  "RelWithDebInfo", "MinSizeRel")
 
 
@@ -43,7 +35,7 @@ foreach($VisualStudio in $VisualStudios)
             }
             New-Item $SolutionDir -ItemType Directory
             cd $SolutionDir
-            & "cmake.exe" "../../" "-G" "NMake Makefiles" "-DCMAKE_BUILD_TYPE=$Configurations" "-DCCSYNC_OUTPUT_DIR=`"$OutputDir`""
+            & "cmake.exe" "../../" "-G" "NMake Makefiles" "-DCMAKE_BUILD_TYPE=$Configurations" "-DCC_OUTPUT_DIR=`"$OutputDir`""
             if($LASTEXITCODE -ne 0)
             {
                 cd $CurrentDir
