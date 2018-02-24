@@ -1,6 +1,7 @@
+################################################################################
 # @Author Andreas Dirmeier
 # @brief Main CMakeList.txt for CcOSExampleProject
-#############
+################################################################################
 cmake_minimum_required (VERSION 3.0)
 
 ################################################################################
@@ -39,21 +40,9 @@ if(NOT CC_OUTPUT_DIR)
   set(CC_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Output")
 endif()
 
-# Set runtime output dir to root/output if no other location was defined
-if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CC_OUTPUT_DIR}/bin")
-endif()
-
-# Set library output dir to root/output if no other location was defined
-if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CC_OUTPUT_DIR}/lib")
-endif()
-
-# Set archive output dir to root/output if no other location was defined
-if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
-  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CC_OUTPUT_DIR}/lib/static")
-endif()
-
+################################################################################
+# Setup Default Values for CMAKE
+################################################################################
 CcNoConfigurationDirs()
 enable_testing()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
