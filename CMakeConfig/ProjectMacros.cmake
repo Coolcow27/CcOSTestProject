@@ -69,6 +69,9 @@ macro( CcOSExampleProjectGenerateRcFileToCurrentDir ProjectName )
   set(PROJECT_NAME "${ProjectName}")
   configure_file( ${CCOSEXAMPLEPROJECT_CMAKECONFIG_DIR}/InputFiles/ProjectVersion.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/CcOSExampleProjectVersion.rc.tmp @ONLY)
   CcCopyFile(${CMAKE_CURRENT_SOURCE_DIR}/CcOSExampleProjectVersion.rc.tmp ${CMAKE_CURRENT_SOURCE_DIR}/CcOSExampleProjectVersion.rc)
+  if(${ARGC} GREATER 1)
+    list(APPEND ${ARGV1} "${CMAKE_CURRENT_SOURCE_DIR}/CcOSExampleProjectVersion.rc")
+  endif(${ARGC} GREATER 1)
 endmacro()
 
 ################################################################################
