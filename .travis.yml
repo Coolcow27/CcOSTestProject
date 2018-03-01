@@ -4,8 +4,15 @@ install:
   - sudo apt-get install -y -qq libssl-dev libsqlite3-dev
   
 script:
-  - mkdir build 
-  - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE
+# Build like user would do
+  - mkdir Solution
+  - cd Solution
+  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$(pwd)/Output -DCC_WARNING_AS_ERROR=TRUE
   - make -j $(nproc)
   - make test
+  - cd ..
+
+# Execute Cc Test-Builds.sh
+  - cd Tools
+  - sh Test-Builds.sh
+  - cd ..
